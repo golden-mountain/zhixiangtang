@@ -1,0 +1,24 @@
+-
+  name: 远灌
+  children:
+    -
+      name: 世榜
+      zi: 定元
+      birthday: 清乾隆癸丑年九月初十日辰时
+      died: 清道光申申年正月初九日戌时
+      grave: 永明五十二都十万洲新？垇中心嵊仙人骑鹤形辛山乙酉卯分金
+      wife:
+        -
+          name: 钟氏
+          birthday: 清乾隆壬子年四月初二日丑时
+          location: 本邑龙江头
+          died: 嘉庆己巳年十月十四日亥时
+          grave: 永明五十二都岭下内坊模案燕子伏梁形壬山丙向
+        -
+          name: 钟氏
+          died: unknown
+          grave: unknown
+      children:
+        -
+          name: 运鼎
+
