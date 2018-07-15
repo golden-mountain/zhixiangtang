@@ -4,6 +4,11 @@ import "./App.css";
 // const YAML = require("yamljs");
 import YAML from "yamljs";
 import { Treebeard } from "react-treebeard";
+import "antd/dist/antd.css";
+import { Table } from "antd";
+import { Layout } from "antd";
+
+const { Header, Sider, Content } = Layout;
 
 // parse YAML string
 // const nativeObject = YAML.parse(yamlString);
@@ -20,7 +25,7 @@ class App extends Component {
   }
 
   onToggle(node, toggled) {
-    console.log(node, toggled);
+    // console.log(node, toggled);
     if (this.state.cursor) {
       this.setState({ cursor: { active: false } });
       // this.state.cursor.active = false;
@@ -30,6 +35,14 @@ class App extends Component {
       node.toggled = toggled;
     }
     this.setState({ cursor: node });
+    // console.log("node....", node);
+  }
+
+  renderNode() {
+    if (this.state.cursor) {
+      for (let node in this.state.cursor) {
+      }
+    }
   }
 
   componentWillMount() {
@@ -66,22 +79,24 @@ class App extends Component {
     //   yaml = yaml.replace(new RegExp(entry[0] + ":", "g"), entry[1] + ":");
     // }
     // console.log(yaml);
-    const formatData = (data, myParent = "") => {
+    const formatData = data => {
       // return data;
       let d = [];
-      let parent = "";
       data.forEach(element => {
-        let newData = {};
+        let newData = element;
         if (element["子"]) {
-          parent = "子:";
-          newData["children"] = formatData(element["子"], parent);
-          newData["toggled"] = false;
-        } else if (element["妻"]) {
-          parent = "妻:";
-          newData["children"] = formatData(element["妻"], parent);
+          // parent = "子:";
+          newData["children"] = formatData(element["子"]);
           newData["toggled"] = false;
         }
-        newData["name"] = myParent + element["名"] || "未知姓名";
+
+        // else if (element["妻"]) {
+        //   parent = "妻:";
+        //   newData["children"] = formatData(element["妻"], parent);
+        //   newData["toggled"] = false;
+        //   // delete element["妻"];
+        // }
+        newData["name"] = element["名"] || "未知姓名";
         d.push(newData);
       });
       return d;
@@ -96,15 +111,71 @@ class App extends Component {
     // this.setState({ data });
   }
 
+  getDataSource() {
+    let dataSource = [];
+
+    if (this.state.cursor) {
+      const excludes = ["toggled", "children", "name", "active"];
+      Object.entries(this.state.cursor).forEach((entry, index) => {
+        if (!excludes.includes(entry[0])) {
+          if (!Array.isArray(entry[1])) {
+            dataSource.push({
+              key: index,
+              name: entry[0],
+              value: entry[1]
+            });
+          } else if (entry[0] != "子") {
+            const children = entry[1];
+            let str = "";
+            children.forEach((elm, index) => {
+              str += ++index + ": [";
+              Object.entries(elm).forEach(e => {
+                str += e[0] + ":" + e[1] + " ";
+              });
+              str += " ]  ";
+            });
+            dataSource.push({
+              key: index,
+              name: entry[0],
+              value: str
+            });
+          }
+        }
+      });
+    }
+    // console.log(dataSource);
+    return dataSource;
+  }
+
   render() {
+    const columns = [
+      {
+        title: "字段",
+        dataIndex: "name",
+        key: "name"
+      },
+      {
+        title: "值",
+        dataIndex: "value",
+        key: "value"
+      }
+    ];
     return (
-      <div className="App">
-        <header className="App-header">
+      <Layout>
+        <Header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">至香堂演示代码</h1>
-        </header>
-        <Treebeard data={this.data} onToggle={this.onToggle} />
-      </div>
+        </Header>
+        <Layout>
+          <Sider>
+            <Treebeard data={this.data} onToggle={this.onToggle} />
+          </Sider>
+          <Content>
+            <Table columns={columns} dataSource={this.getDataSource()} />
+          </Content>
+        </Layout>
+
+      </Layout>
     );
   }
 }
