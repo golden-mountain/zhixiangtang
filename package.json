@@ -29,6 +29,8 @@
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
     "json-loader": "^0.5.7",
+    "lodash": "^4.17.10",
+    "nzh": "^1.0.3",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "3.2.0",
     "postcss-loader": "2.0.8",
