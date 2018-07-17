@@ -10,7 +10,7 @@ import { cn } from "nzh";
 import { Table } from "antd";
 import { Layout } from "antd";
 
-// import { pickBy } from "lodash";
+import { cloneDeep } from "lodash";
 
 const { Header, Sider, Content } = Layout;
 
@@ -186,19 +186,28 @@ function cacHour(date) {
     戌: "19:00-21:00",
     亥: "21:00-23:00"
   };
-  return zs[hour];
+  return zs[hour] || "0:00-0:00";
 }
 
-function translateDate(date) {
-  return (
-    caculateYear(date) +
-    "/" +
-    cacMonth(date) +
-    "/" +
-    cacDay(date) +
-    " " +
-    cacHour(date)
-  );
+function translateDate(date, number = false) {
+  if (!number) {
+    return (
+      caculateYear(date) +
+      "/" +
+      cacMonth(date) +
+      "/" +
+      cacDay(date) +
+      " " +
+      cacHour(date)
+    );
+  } else {
+    return (
+      caculateYear(date) +
+      cacMonth(date) +
+      cacDay(date) +
+      cacHour(date).split("-")[0].replace(":", "")
+    );
+  }
 }
 
 class App extends Component {
@@ -207,6 +216,7 @@ class App extends Component {
     this.state = {};
     this.data = {};
     this.onToggle = this.onToggle.bind(this);
+    this.yaml = require("./yaml/yuanguan.yaml");
   }
 
   onToggle(node, toggled) {
@@ -231,7 +241,6 @@ class App extends Component {
   }
 
   componentWillMount() {
-    let yaml = require("./yaml/yuanguan.yaml");
     // const entries = {
     //   名: "ming",
     //   又: "you",
@@ -272,11 +281,120 @@ class App extends Component {
       return d;
     };
 
-    const nativeObject = YAML.parse(yaml);
-    const myData = formatData(nativeObject);
+    this.nativeObject = YAML.parse(this.yaml);
+    const myData = formatData(this.nativeObject);
     this.data["name"] = "文辉堂";
     this.data["toggled"] = true;
     this.data["children"] = myData;
+  }
+
+  getCode() {
+    const excludes = ["toggled", "children", "name", "active"];
+    const tidyData = data =>
+      (data ? data.replace(/[[(](.*?)[\])]/, "$1") : data);
+
+    const createPersonLang = (element, variableName) => {
+      excludes.forEach(key => {
+        if (element[key] !== undefined) {
+          delete element[key];
+        }
+      });
+      // const json = JSON.stringify(element);
+      let valuePairs = [];
+      Object.entries(element).forEach(entry => {
+        if (!Array.isArray(entry[1])) {
+          let key = tidyData(entry[0]);
+          let value = tidyData(entry[1]);
+          if (key === "生") {
+            valuePairs.push('日: "' + translateDate(value, true) + '"');
+          }
+          if (key === "殁") {
+            valuePairs.push('死: "' + translateDate(value, true) + '"');
+          }
+          valuePairs.push(key + ': "' + value + '"');
+        }
+      });
+      let json = "{" + valuePairs.join(", ") + "}";
+      let createPerson = `CREATE (${variableName}:Person${json})`;
+      return createPerson;
+    };
+
+    const formatData = (data, person = "") => {
+      let d = [], relation = [];
+      data.forEach((element, index) => {
+        let name = tidyData(element["名"]);
+        let variableName = name + "_" + index;
+
+        if (person) {
+          variableName = person + "_" + variableName;
+          let createRelation = `CREATE (${variableName})-[:RELATION{role: 'son'}]->(${tidyData(person)})`;
+          relation.push(createRelation);
+        }
+
+        // excludes.forEach(key => {
+        //   if (element[key] !== undefined) {
+        //     delete element[key];
+        //   }
+        // });
+        // // const json = JSON.stringify(element);
+        // let valuePairs = [];
+        // Object.entries(element).forEach(entry => {
+        //   if (!Array.isArray(entry[1])) {
+        //     let key = tidyData(entry[0]);
+        //     let value = tidyData(entry[1]);
+        //     valuePairs.push(key + ': "' + value + '"');
+        //   }
+        // });
+        // let json = "{" + valuePairs.join(", ") + "}";
+        // let createPerson = `CREATE (${variableName}:Person${json})`;
+        let createPerson = createPersonLang(element, variableName);
+        d.push(createPerson);
+
+        if (element["子"]) {
+          // variableName = variableName ? variableName + "_" + name : name;
+          const sub = formatData(element["子"], variableName);
+          // console.log(sub, "sub....");
+          d = d.concat(sub);
+          // console.log(d);
+          delete element["子"];
+          delete element["children"];
+        }
+
+        if (person) {
+          let createRelation = `CREATE (${variableName})-[:RELATION{role: 'son'}]->(${tidyData(person)})`;
+          relation.push(createRelation);
+        }
+
+        if (element["妻"]) {
+          element["妻"].forEach((w, i) => {
+            let wifeName = variableName + "_妻_" + tidyData(w["名"]) + "_" + i;
+            let createRelation = `CREATE (${wifeName})-[:RELATION{role: 'wife'}]->(${variableName})`;
+            relation.push(createRelation);
+            let createPerson = createPersonLang(w, wifeName);
+            d.push(createPerson);
+          });
+          delete element["妻"];
+        }
+
+        if (element["女"]) {
+          element["女"].forEach((w, i) => {
+            let daughterName =
+              variableName + "_女_" + tidyData(w["名"]) + "_" + i;
+            let createRelation = `CREATE (${daughterName})-[:RELATION{role: 'daughter'}]->(${variableName})`;
+            relation.push(createRelation);
+            let createPerson = createPersonLang(w, daughterName);
+            d.push(createPerson);
+          });
+          delete element["女"];
+        }
+      });
+      d = d.concat(relation);
+      return d;
+    };
+    const clonedObject = cloneDeep(this.nativeObject);
+    const flattedObject = formatData(clonedObject);
+    // console.log(flattedObject);
+    return flattedObject.join("\n\r");
   }
 
   getDataSource() {
@@ -353,6 +471,7 @@ class App extends Component {
           </Sider>
           <Content>
             <Table columns={columns} dataSource={this.getDataSource()} />
+            {/* <code>{this.getCode()}</code> */}
           </Content>
         </Layout>
 
