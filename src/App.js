@@ -173,41 +173,32 @@ function cacDay(date) {
 function cacHour(date) {
   const hour = date.slice(date.indexOf("日") + 1, date.indexOf("时"));
   const zs = {
-    子: "23:00-1:00",
-    丑: "1:00-3:00",
-    寅: "3:00-5:00",
-    卯: "5:00-7:00",
-    辰: "7:00-9:00",
-    巳: "9:00-11:00",
-    午: "11:00-13:00",
-    未: "13:00-15:00",
-    申: "15:00-17:00",
-    酉: "17:00-19:00",
-    戌: "19:00-21:00",
-    亥: "21:00-23:00"
+    子: "23:00",
+    丑: "1:00",
+    寅: "3:00",
+    卯: "5:00",
+    辰: "7:00",
+    巳: "9:00",
+    午: "11:00",
+    未: "13:00",
+    申: "15:00",
+    酉: "17:00",
+    戌: "19:00",
+    亥: "21:00"
   };
-  return zs[hour] || "0:00-0:00";
+  return zs[hour] || "0:00";
 }
 
-function translateDate(date, number = false) {
-  if (!number) {
-    return (
-      caculateYear(date) +
-      "/" +
-      cacMonth(date) +
-      "/" +
-      cacDay(date) +
-      " " +
-      cacHour(date)
-    );
-  } else {
-    return (
-      caculateYear(date) +
-      cacMonth(date) +
-      cacDay(date) +
-      cacHour(date).split("-")[0].replace(":", "")
-    );
-  }
+function translateDate(date) {
+  return (
+    caculateYear(date) +
+    "/" +
+    cacMonth(date) +
+    "/" +
+    cacDay(date) +
+    " " +
+    cacHour(date)
+  );
 }
 
 class App extends Component {
@@ -306,10 +297,12 @@ class App extends Component {
           let key = tidyData(entry[0]);
           let value = tidyData(entry[1]);
           if (key === "生") {
-            valuePairs.push('日: "' + translateDate(value, true) + '"');
+            const seconds = new Date(translateDate(value)).getTime() || 0;
+            valuePairs.push("日:" + seconds);
           }
           if (key === "殁") {
-            valuePairs.push('死: "' + translateDate(value, true) + '"');
+            const seconds = new Date(translateDate(value)).getTime() || 0;
+            valuePairs.push("死:" + seconds);
           }
           valuePairs.push(key + ': "' + value + '"');
         }
@@ -471,7 +464,7 @@ class App extends Component {
           </Sider>
           <Content>
             <Table columns={columns} dataSource={this.getDataSource()} />
-            {/* <code>{this.getCode()}</code> */}
+            <code>{this.getCode()}</code>
           </Content>
         </Layout>
 
