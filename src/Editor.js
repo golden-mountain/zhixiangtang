@@ -1,18 +1,19 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
-import "./App.css";
-import "antd/dist/antd.css";
 
 // import { Table } from "antd";
-import { Layout } from "antd";
+import { Row, Col } from "antd";
+// import YAML from "yamljs";
+
 import MonacoEditor from "react-monaco-editor";
 
-const { Header, Sider, Content } = Layout;
+import TreeParser from "./components/TreeParser";
+import PTXLayout from "./components/Layout";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      errorMsg: "",
       code: `-
   名: xx
   字: xx
@@ -27,37 +28,47 @@ class App extends Component {
   }
 
   onChange(newValue, e) {
-    console.log("onChange", newValue, e);
+    console.log("onChange", typeof newValue, e);
+    //this.state.code = newValue;
+    if (typeof newValue === "string") {
+      try {
+        this.setState({ code: newValue });
+      } catch (e) {
+        console.log("error parsed", e);
+      }
+    }
+  }
+
+  onTipClose() {
+    this.setState({
+      errorMsg: ""
+    });
   }
 
   render() {
-    const code = this.state.code;
     const options = {
       selectOnLineNumbers: true
     };
     return (
-      <Layout>
-        <Header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">编辑器</h1>
-        </Header>
-        <Layout>
-          <Sider width={400} />
-          <Content>
+      <PTXLayout>
+        <Row>
+          <Col span={8}>
             <MonacoEditor
-              width="800"
-              height="600"
+              width="95%"
+              height={700}
               language="yaml"
               theme="vs-dark"
-              value={code}
+              value={this.state.code}
               options={options}
               onChange={this.onChange.bind(this)}
               editorDidMount={this.onChange.bind(this)}
             />
-          </Content>
-        </Layout>
-
-      </Layout>
+          </Col>
+          <Col span={16}>
+            <TreeParser yaml={this.state.code} />
+          </Col>
+        </Row>
+      </PTXLayout>
     );
   }
 }

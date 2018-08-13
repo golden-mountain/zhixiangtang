@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import "antd/dist/antd.css";
 import "./index.css";
 import App from "./App";
 import Editor from "./Editor";
@@ -12,7 +13,6 @@ ReactDOM.render(
       <IndexRoute component={App} />
     </Route>
     <Route path="editor" component={Editor} />
-
   </Router>,
   document.getElementById("root")
 );

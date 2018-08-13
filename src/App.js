@@ -1,12 +1,9 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import "antd/dist/antd.css";
-import { Layout } from "antd";
 
+import PTXLayout from "./components/Layout";
 import TreeParser from "./components/TreeParser";
-
-const { Header } = Layout;
 
 class App extends Component {
   constructor(props) {
@@ -18,13 +15,9 @@ class App extends Component {
 
   render() {
     return (
-      <Layout>
-        <Header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">至香堂演示代码</h1>
-        </Header>
+      <PTXLayout>
         <TreeParser yaml={this.yaml} />
-      </Layout>
+      </PTXLayout>
     );
   }
 }
