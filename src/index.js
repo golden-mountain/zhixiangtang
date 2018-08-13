@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "antd/dist/antd.css";
-import "./index.css";
+import "./styles/index.less";
 import App from "./App";
 import Editor from "./Editor";
 import { Router, Route, IndexRoute, hashHistory } from "react-router";

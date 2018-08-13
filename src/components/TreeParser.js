@@ -7,15 +7,40 @@ import dateCaculators from "../library/dateCaculator";
 const { Sider, Content } = Layout;
 const { translateDate } = dateCaculators;
 
+// const decorators = {
+//   Loading: props => {
+//     return <div style={props.style}>loading...</div>;
+//   },
+//   Toggle: props => {
+//     return (
+//       <div style={props.style}>
+//         <svg height={props.height} width={props.width} />
+//       </div>
+//     );
+//   },
+//   Header: props => {
+//     return <div style={props.style}>{props.node.name}</div>;
+//   },
+//   Container: props => {
+//     return (
+//       <div>
+//         <props.decorators.Toggle />
+//         <props.decorators.Header />
+//       </div>
+//     );
+//   }
+// };
+
 class TreeParser extends Component {
   constructor(props) {
     super(props);
     this.state = {
       cursor: null,
       dataSource: [],
-      errorMsg: ""
+      errorMsg: "",
+      data: null
     };
-    this.data = {};
+    // this.data = {};
   }
 
   onToggle(node, toggled) {
@@ -93,11 +118,14 @@ class TreeParser extends Component {
     return d;
   }
 
-  loadData() {
+  loadData(yaml) {
+    let data = {};
     try {
-      this.nativeObject = YAML.parse(this.props.yaml);
+      this.nativeObject = YAML.parse(yaml);
       const myData = this.formatData(this.nativeObject);
-      this.data["children"] = myData;
+      data["children"] = myData;
+      data["name"] = "我的谱";
+      data["toggled"] = true;
     } catch (e) {
       console.log(e);
       notification.open({
@@ -106,18 +134,17 @@ class TreeParser extends Component {
         message: "编辑出错了",
         description: "您输入的信息格式错误，请仔细检查"
       });
-    } finally {
-      this.data["name"] = "我的谱";
-      this.data["toggled"] = true;
     }
+    this.setState({ data });
   }
 
-  componentWillUpdate() {
-    this.loadData();
+  componentWillReceiveProps(nextProps) {
+    // console.log(nextProps);
+    this.loadData(nextProps.yaml);
   }
 
   componentWillMount() {
-    this.loadData();
+    this.loadData(this.props.yaml);
   }
 
   render() {
@@ -136,7 +163,10 @@ class TreeParser extends Component {
     return (
       <Layout>
         <Sider width={400}>
-          <Treebeard data={this.data} onToggle={this.onToggle.bind(this)} />
+          <Treebeard
+            data={this.state.data}
+            onToggle={this.onToggle.bind(this)}
+          />
         </Sider>
         <Content>
           <Table columns={columns} dataSource={this.state.dataSource} />

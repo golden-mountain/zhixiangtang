@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 // import { Table } from "antd";
-import { Row, Col } from "antd";
+import { Row, Col, Spin } from "antd";
 // import YAML from "yamljs";
 
 import MonacoEditor from "react-monaco-editor";
@@ -15,9 +15,9 @@ class App extends Component {
     this.state = {
       errorMsg: "",
       code: `-
-  名: xx
-  字: xx
-  号: xx
+  名: 先知
+  字: 后觉
+  号: 先知不觉
 `
     };
   }
@@ -28,7 +28,7 @@ class App extends Component {
   }
 
   onChange(newValue, e) {
-    console.log("onChange", typeof newValue, e);
+    // console.log("onChange", newValue);
     //this.state.code = newValue;
     if (typeof newValue === "string") {
       try {
@@ -63,6 +63,10 @@ class App extends Component {
               onChange={this.onChange.bind(this)}
               editorDidMount={this.onChange.bind(this)}
             />
+            <div className="ptx-editor-save">
+              <Spin />
+              <label>正在自动保存</label>
+            </div>
           </Col>
           <Col span={16}>
             <TreeParser yaml={this.state.code} />
