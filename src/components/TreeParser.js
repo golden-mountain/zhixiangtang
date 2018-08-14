@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import YAML from "yamljs";
 import { Treebeard } from "react-treebeard";
-import { Table, Layout, notification } from "antd";
+import { Table, Layout, notification, Icon } from "antd";
 import dateCaculators from "../library/dateCaculator";
+import * as filters from "../library/TreeBeardFilters";
 
 const { Sider, Content } = Layout;
 const { translateDate } = dateCaculators;
@@ -19,7 +20,20 @@ const { translateDate } = dateCaculators;
 //     );
 //   },
 //   Header: props => {
-//     return <div style={props.style}>{props.node.name}</div>;
+//     const { style, node } = props;
+//     // console.log(props, "node....");
+//     if (!node) return null;
+//     const iconType = node.children ? "usergroup-add" : "user";
+
+//     return (
+//       <div style={style.base}>
+//         <div style={style.title}>
+//           <Icon type={iconType} />
+
+//           {node.name}
+//         </div>
+//       </div>
+//     );
 //   },
 //   Container: props => {
 //     return (
@@ -41,6 +55,7 @@ class TreeParser extends Component {
       data: null
     };
     // this.data = {};
+    this.changeTimeHandler = null;
   }
 
   onToggle(node, toggled) {
@@ -109,42 +124,60 @@ class TreeParser extends Component {
       let newData = element;
       if (element["子"]) {
         newData["children"] = this.formatData(element["子"]);
-        newData["toggled"] = false;
       }
 
+      //TODO:
+      // console.log(element["名"], current, "equal:", toggled);
+      // const toggled = element["名"].trim() === current.trim();
+      // newData["toggled"] = toggled;
       newData["name"] = element["名"] || "未知姓名";
       d.push(newData);
     });
     return d;
   }
 
-  loadData(yaml) {
+  loadData(yaml, current) {
     let data = {};
+    const key = "editerror";
     try {
       this.nativeObject = YAML.parse(yaml);
       const myData = this.formatData(this.nativeObject);
+
+      // console.log("parsed data", filtered);
       data["children"] = myData;
       data["name"] = "我的谱";
       data["toggled"] = true;
+      notification.close(key);
+      let filtered = data;
+      if (current) {
+        const filter = current.trim();
+        console.log("filter is ", filter, "data", filtered);
+        filtered = filters.filterTree(filtered, filter);
+        filtered = filters.expandFilteredNodes(filtered, filter);
+      }
+      data = filtered;
+      clearTimeout(this.changeTimeHandler);
     } catch (e) {
       console.log(e);
-      notification.open({
-        placement: "bottomLeft",
-        key: "editerror",
-        message: "编辑出错了",
-        description: "您输入的信息格式错误，请仔细检查"
-      });
+      this.changeTimeHandler = setTimeout(function() {
+        notification.open({
+          placement: "bottomLeft",
+          key,
+          message: "编辑出错了",
+          description: "您输入的信息格式错误，请仔细检查"
+        });
+      }, 5000);
     }
     this.setState({ data });
   }
 
   componentWillReceiveProps(nextProps) {
     // console.log(nextProps);
-    this.loadData(nextProps.yaml);
+    this.loadData(nextProps.yaml, nextProps.currentKey || "");
   }
 
   componentWillMount() {
-    this.loadData(this.props.yaml);
+    this.loadData(this.props.yaml, this.props.currentKey || "");
   }
 
   render() {
@@ -160,10 +193,14 @@ class TreeParser extends Component {
         key: "value"
       }
     ];
+    // console.log(this.props.currentKey);
+
     return (
       <Layout>
         <Sider width={400}>
           <Treebeard
+            height={700}
+            // decorators={decorators}
             data={this.state.data}
             onToggle={this.onToggle.bind(this)}
           />

@@ -1,0 +1,10 @@
+.ptx-editor-save {
+  margin-top: 10px;
+}
+
+.ptx-tree-selector {
+  background:rgba(0, 0, 0, 0.6);
+  margin-bottom: 15px;
+  padding:10px;
+  border-radius: 5px;
+}

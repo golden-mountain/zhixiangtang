@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Layout, Menu, Breadcrumb } from "antd";
+import { Link } from "react-router";
 
 const { Header, Content, Footer } = Layout;
 
@@ -15,8 +16,8 @@ class PTXLayout extends Component {
             defaultSelectedKeys={["2"]}
             style={{ lineHeight: "64px" }}
           >
-            <Menu.Item key="1">首页</Menu.Item>
-            <Menu.Item key="2">族谱</Menu.Item>
+            <Menu.Item key="1"><Link to="/">首页</Link></Menu.Item>
+            <Menu.Item key="2"><Link to="/editor">族谱</Link></Menu.Item>
           </Menu>
         </Header>
         <Content style={{ padding: "0 50px" }}>
