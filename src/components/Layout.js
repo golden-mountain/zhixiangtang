@@ -6,6 +6,7 @@ const { Header, Content, Footer } = Layout;
 
 class PTXLayout extends Component {
   render() {
+    // console.log(this.context);
     return (
       <Layout>
         <Header className="header">
@@ -18,6 +19,7 @@ class PTXLayout extends Component {
           >
             <Menu.Item key="1"><Link to="/">首页</Link></Menu.Item>
             <Menu.Item key="2"><Link to="/editor">族谱</Link></Menu.Item>
+            <Menu.Item key="3"><Link to="/code">代码</Link></Menu.Item>
           </Menu>
         </Header>
         <Content style={{ padding: "0 50px" }}>
