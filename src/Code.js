@@ -100,8 +100,8 @@ class Code extends Component {
       return createPerson;
     };
 
-    const formatData = (data, person = "") => {
-      let d = [], relation = [], level = 0;
+    const formatData = (data, person = "", level = 0) => {
+      let d = [], relation = [];
       data.forEach((element, index) => {
         let name = tidyData(element["名"]);
         let variableName = name + "_" + index;
@@ -117,8 +117,8 @@ class Code extends Component {
 
         if (element["子"]) {
           level++;
-          // console.log("level", level);
-          const sub = formatData(element["子"], variableName);
+          // console.log("level", level, "name:", variableName);
+          const sub = formatData(element["子"], variableName, level);
           d = d.concat(sub);
           delete element["子"];
           delete element["children"];
