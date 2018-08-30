@@ -1,38 +1,82 @@
 import React, { Component } from "react";
 
 // import { Table } from "antd";
-import { Row, Col, Spin, TreeSelect, Button, Icon } from "antd";
+import { Row, Col, Spin, Button, Icon, Input, AutoComplete } from "antd";
 // import YAML from "yamljs";
 
 import MonacoEditor from "react-monaco-editor";
 
 import TreeParser from "./components/TreeParser";
 import PTXLayout from "./components/Layout";
+const Option = AutoComplete.Option;
+const OptGroup = AutoComplete.OptGroup;
 
-const treeData = [
+const dataSource = [
   {
-    title: "Node1",
-    value: "0-0",
-    key: "0-0",
+    title: "会金",
     children: [
       {
-        title: "Child Node1",
-        value: "0-0-1",
-        key: "0-0-1"
+        title: "良系",
+        count: 10000
       },
       {
-        title: "Child Node2",
-        value: "0-0-2",
-        key: "0-0-2"
+        title: "良俊",
+        count: 10600
       }
     ]
   },
   {
-    title: "Node2",
-    value: "0-1",
-    key: "0-1"
+    title: "会铝",
+    children: [
+      {
+        title: "良思",
+        count: 60100
+      },
+      {
+        title: "良田",
+        count: 30010
+      }
+    ]
+  },
+  {
+    title: "统壬",
+    children: [
+      {
+        title: "会针",
+        count: 100000
+      }
+    ]
   }
 ];
+
+function renderTitle(title) {
+  return (
+    <span>
+      {title}
+      <a
+        style={{ float: "right" }}
+        href="https://www.google.com/search?q=antd"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        100个子孙
+      </a>
+    </span>
+  );
+}
+const autoCompleteOptions = dataSource.map(group => (
+  <OptGroup key={group.title} label={renderTitle(group.title)}>
+    {group.children.map(opt => (
+      <Option key={opt.title} value={opt.title}>
+        {opt.title}
+        <span className="certain-search-item-count">
+          {opt.count}
+          个子孙
+        </span>
+      </Option>
+    ))}
+  </OptGroup>
+));
 
 class App extends Component {
   constructor(props) {
@@ -42,6 +86,7 @@ class App extends Component {
       errorMsg: "",
       currentKey: "",
       autoSaving: false,
+      searchKey: "",
       codeChanged: false,
       code: `-
   名: 先知
@@ -58,7 +103,10 @@ class App extends Component {
     this.setState({ value });
   }
 
-  onTreeSearch() {}
+  onTreeSearch(value) {
+    console.log("search key", value);
+    this.setState({ searchKey: value });
+  }
 
   editorDidMount(editor, monaco) {
     // console.log("editorDidMount", editor);
@@ -93,6 +141,8 @@ class App extends Component {
     });
   }
 
+  save() {}
+
   render() {
     const options = {
       selectOnLineNumbers: true,
@@ -110,23 +160,30 @@ class App extends Component {
     return (
       <PTXLayout>
         <Row className="ptx-tree-selector">
-          <Col span={20}>
-            <TreeSelect
-              style={{ width: 300 }}
-              value={this.state.value}
-              dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
-              treeData={treeData}
-              placeholder="选择我编辑过的项目"
-              treeDefaultExpandAll={false}
-              onChange={this.onTreeChange.bind(this)}
-              searchPlaceholder="输入名字搜索"
-              showSearch
-              allowClear
+          <Col span={6}>
+            <AutoComplete
+              className="certain-category-search"
+              dropdownClassName="certain-category-search-dropdown"
+              dropdownMatchSelectWidth={false}
+              dropdownStyle={{ width: 300 }}
+              size="large"
+              style={{ width: "100%" }}
+              dataSource={autoCompleteOptions}
+              placeholder="input here"
+              optionLabelProp="value"
               onSearch={this.onTreeSearch.bind(this)}
-            />
+            >
+              <Input
+                suffix={
+                  <Icon type="search" className="certain-category-icon" />
+                }
+              />
+            </AutoComplete>
           </Col>
-          <Col span={4} style={{ textAlign: "right" }}>
-            <Button disabled={!this.state.codeChanged}>保存</Button>
+          <Col span={2}>
+            <Button type="primary" size="large" onClick={this.save.bind(this)}>
+              保存
+            </Button>
           </Col>
         </Row>
         <Row>
@@ -141,12 +198,12 @@ class App extends Component {
               onChange={this.onEditorChange.bind(this)}
               editorDidMount={this.editorDidMount.bind(this)}
             />
-            {this.state.autoSaving
-              ? <div className="ptx-editor-save">
-                  <Spin />
-                  <label>正在自动保存</label>
-                </div>
-              : null}
+            {this.state.autoSaving ? (
+              <div className="ptx-editor-save">
+                <Spin />
+                <label>正在自动保存</label>
+              </div>
+            ) : null}
           </Col>
           <Col span={16}>
             <TreeParser
