@@ -95,7 +95,7 @@ class Code extends Component {
         }
       });
       let json = "{" + valuePairs.join(", ") + "}";
-      let createPerson = `CREATE (${variableName}:Person:${this.state.firstName}${json});`;
+      let createPerson = `CREATE (${variableName}:Person:${this.state.firstName}${json})`;
       // console.log(createPerson);
       return createPerson;
     };
@@ -108,7 +108,7 @@ class Code extends Component {
 
         if (person) {
           variableName = person + "_" + variableName;
-          let createRelation = `CREATE (${variableName})-[:RELATION{role: 'son'}]->(${tidyData(person)});`;
+          let createRelation = `CREATE (${variableName})-[:RELATION{role: 'son'}]->(${tidyData(person)})`;
           relation.push(createRelation);
         }
 
@@ -127,7 +127,7 @@ class Code extends Component {
         if (element["妻"]) {
           element["妻"].forEach((w, i) => {
             let wifeName = variableName + "_妻_" + tidyData(w["名"]) + "_" + i;
-            let createRelation = `CREATE (${wifeName})-[:RELATION{role: 'wife'}]->(${variableName});`;
+            let createRelation = `CREATE (${wifeName})-[:RELATION{role: 'wife'}]->(${variableName})`;
             relation.push(createRelation);
             let createPerson = createPersonLang(w, wifeName, level);
             d.push(createPerson);
@@ -139,7 +139,7 @@ class Code extends Component {
           element["女"].forEach((w, i) => {
             let daughterName =
               variableName + "_女_" + tidyData(w["名"]) + "_" + i;
-            let createRelation = `CREATE (${daughterName})-[:RELATION{role: 'daughter'}]->(${variableName});`;
+            let createRelation = `CREATE (${daughterName})-[:RELATION{role: 'daughter'}]->(${variableName})`;
             relation.push(createRelation);
             let createPerson = createPersonLang(w, daughterName, level);
             d.push(createPerson);
